@@ -3,62 +3,54 @@
 import Link from "next/link";
 import AuthComp from "@/components/app/auth-comp";
 import { usePathname } from "next/navigation";
-import { GitHubStars } from "@/components/github-stars";
 import { NotificationsMenu } from "@/components/app/notifications-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
-import { Map, MapPin, Settings, Home } from "lucide-react";
+
+const navItems = [
+  { href: "/", label: "Home" },
+  { href: "/nearby", label: "Nearby" },
+  { href: "/settings", label: "Settings" },
+] as const;
 
 export default function Navbar() {
   const pathname = usePathname();
 
-  const navItems = [
-    { href: "/", label: "Home", icon: Home },
-    { href: "/nearby", label: "Nearby", icon: Map },
-    { href: "/settings", label: "Settings", icon: Settings },
-  ];
-
   return (
-    <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50 sticky top-0">
-      <div className="mx-auto max-w-6xl flex items-center justify-between px-3 sm:px-4 lg:px-6 pt-2">
-        <div className="flex items-center gap-4 sm:gap-6">
-          <Link href="/" className="flex items-center gap-1.5 font-semibold">
-            <span className="font-bold text-base sm:text-lg">WorkIn</span>
+    <header className="sticky top-0 z-50 w-full border-b bg-background">
+      <div className="mx-auto max-w-6xl flex h-14 items-center justify-between gap-4 px-4">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="hidden md:flex items-center gap-2">
+            <span className="text-[15px] font-semibold tracking-tight">cowork</span>
           </Link>
+
+          <nav className="flex items-center gap-2">
+            {navItems.map((item) => {
+              const isActive =
+                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "text-sm transition-colors hover:text-foreground",
+                    isActive ? "text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
 
-        <div className="flex items-center gap-0.5 sm:gap-1">
-          <div className="hidden sm:block">
-            <GitHubStars repo="thetanav/workin" stargazersCount={10} />
-          </div>
-          <ThemeToggle />
+        <div className="flex h-full items-center justify-center gap-1">
           <NotificationsMenu />
-          <AuthComp />
+          <div className="ml-1">
+            <AuthComp />
+          </div>
         </div>
       </div>
-
-      {/* Mobile Navigation Bar (Bottom) */}
-      <div className="flex items-center gap-2 px-3 py-1.5">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex gap-2 items-center justify-center p-2 rounded-md text-xs font-medium transition-all duration-200 touch-manipulation",
-                isActive
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent",
-              )}
-            >
-              <Icon size={18} />
-              <span className="text-md leading-tight">{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+    </header>
   );
 }

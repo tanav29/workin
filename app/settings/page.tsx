@@ -2,10 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -18,34 +16,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, ExternalLink, Timer, MapPin, Radio } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Loader2, ExternalLink, MapPin } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 
-function timeAgo(timestamp: number) {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  if (seconds < 60) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+function timeAgo(ts: number) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
 }
-
 function initials(name?: string) {
   const n = (name ?? "").trim();
   if (!n) return "?";
-  const parts = n.split(/\s+/).filter(Boolean);
-  const a = parts[0]?.[0] ?? "";
-  const b = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
-  return (a + b).toUpperCase();
+  const p = n.split(/\s+/).filter(Boolean);
+  return ((p[0]?.[0] ?? "") + (p.length > 1 ? p[p.length - 1]?.[0] ?? "" : "")).toUpperCase();
 }
 
 export default function ProfileSettingsPage() {
@@ -77,34 +67,26 @@ export default function ProfileSettingsPage() {
     try {
       await updateProfile({
         bio: bio.trim() || undefined,
-        links: links
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
+        links: links.split(",").map((s) => s.trim()).filter(Boolean),
         defaultVisibility,
-        defaultFuzzKm: Number.isFinite(Number.parseFloat(defaultFuzzKm))
-          ? Math.max(0, Number.parseFloat(defaultFuzzKm))
-          : undefined,
+        defaultFuzzKm: Number.isFinite(Number.parseFloat(defaultFuzzKm)) ? Math.max(0, Number.parseFloat(defaultFuzzKm)) : undefined,
         defaultStatus: defaultStatus.trim() || undefined,
       });
-      toast.success("Profile updated");
+      toast.success("Saved");
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to save";
-      toast.error(msg);
+      toast.error(e instanceof Error ? e.message : "Failed");
     } finally {
       setIsSaving(false);
     }
   }
-
-  async function onStopSession() {
+  async function onStop() {
     if (!myActive) return;
     setIsStopping(true);
     try {
       await stopCheckin();
-      toast.success("Session stopped");
+      toast.success("Session ended");
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to stop session";
-      toast.error(msg);
+      toast.error(e instanceof Error ? e.message : "Failed");
     } finally {
       setIsStopping(false);
     }
@@ -112,125 +94,87 @@ export default function ProfileSettingsPage() {
 
   if (user === undefined) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex flex-1 items-center justify-center py-24">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 md:py-12 pb-24">
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="mx-auto w-full max-w-3xl px-4 py-8">
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage your profile and active sessions.
-            </p>
+            <h1 className="text-xl font-semibold tracking-tight">Settings</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Profile, defaults and active session.</p>
           </div>
           {user && (
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="gap-2 w-full sm:w-auto"
-            >
+            <Button asChild variant="outline" size="sm" className="w-fit bg-background">
               <Link href={`/p/${user.clerkId}`}>
-                View Public Page
-                <ExternalLink size={14} />
+                Public profile <ExternalLink className="size-3.5" />
               </Link>
             </Button>
           )}
         </div>
 
         {!user ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                Please sign in to view your settings.
-              </p>
-            </CardContent>
+          <Card>
+            <CardContent className="p-8 text-center text-sm text-muted-foreground">Please sign in to view settings.</CardContent>
           </Card>
         ) : (
-          <div className="space-y-6">
+          <>
             {myActive && (
-              <Card className="border-primary/20 bg-primary/5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                  <Radio className="h-24 w-24 text-primary" />
-                </div>
+              <Card className="border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-900">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg font-semibold flex items-center gap-2 text-primary">
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <span className="relative flex size-2">
+                        <span className="absolute inline-flex size-2 animate-ping rounded-full bg-emerald-500 opacity-75" />
+                        <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
                       </span>
-                      Active Session
+                      Active session
                     </CardTitle>
-                    <Badge variant="secondary" className="font-mono text-xs">
+                    <Badge variant="secondary" className="font-mono text-xs bg-background">
                       {timeAgo(myActive.startedAt)}
                     </Badge>
                   </div>
+                  <CardDescription className="flex items-center gap-1.5 text-xs">
+                    <MapPin className="size-3.5" /> {myActive.placeName || "Unknown place"}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-start gap-2 text-sm font-medium">
-                        <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                        <span>{myActive.placeName || "Unknown Location"}</span>
-                      </div>
-                      {myActive.note && (
-                        <p className="text-sm text-muted-foreground pl-6">
-                          &ldquo;{myActive.note}&rdquo;
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex justify-end pt-2">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="w-full sm:w-auto gap-2"
-                        onClick={onStopSession}
-                        disabled={isStopping}
-                      >
-                        {isStopping ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Timer className="h-4 w-4" />
-                        )}
-                        Stop Session
-                      </Button>
-                    </div>
+                <CardContent className="pt-0">
+                  {myActive.note && <p className="text-sm leading-6">&ldquo;{myActive.note}&rdquo;</p>}
+                  <div className="mt-3 flex justify-end">
+                    <Button variant="outline" size="sm" className="h-8 bg-background" onClick={onStop} disabled={isStopping}>
+                      {isStopping ? <Loader2 className="size-4 animate-spin" /> : null} Stop session
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            <Card className="border-none p-0 shadow-none">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Profile</CardTitle>
+                <CardDescription>Visible on your public page and check-ins.</CardDescription>
+              </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                  <Avatar className="h-12 w-12 border">
+                <div className="flex items-center gap-3">
+                  <Avatar className="size-10 border">
                     <AvatarImage src={user.imageUrl} alt={user.name} />
                     <AvatarFallback>{initials(user.name)}</AvatarFallback>
                   </Avatar>
-                  <div className="space-y-1">
-                    <h3 className="font-medium leading-none">{user.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {user.email}
-                    </p>
+                  <div>
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                 </div>
-
                 <Separator />
-
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label>Default Status</Label>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Default status</Label>
                     <Select value={defaultStatus} onValueChange={setDefaultStatus}>
-                      <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
+                      <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Open to chat">Open to chat</SelectItem>
                         <SelectItem value="Deep work">Deep work</SelectItem>
@@ -239,12 +183,10 @@ export default function ProfileSettingsPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid gap-2">
-                    <Label>Default Visibility</Label>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Default visibility</Label>
                     <Select value={defaultVisibility} onValueChange={setDefaultVisibility}>
-                      <SelectTrigger className="h-10">
-                        <SelectValue placeholder="Select visibility" />
-                      </SelectTrigger>
+                      <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="public">Public</SelectItem>
                         <SelectItem value="nearby">Nearby only</SelectItem>
@@ -252,64 +194,29 @@ export default function ProfileSettingsPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="default-fuzz">Default Location Fuzz (km)</Label>
-                    <Input
-                      id="default-fuzz"
-                      type="number"
-                      min="0"
-                      step="0.1"
-                      value={defaultFuzzKm}
-                      onChange={(e) => setDefaultFuzzKm(e.target.value)}
-                    />
-                    <p className="text-[10px] text-muted-foreground">
-                      Offsets your map pin by this distance.
-                    </p>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                      id="bio"
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="Tell us what you're building..."
-                      className="min-h-[100px] resize-none"
-                    />
-                    <p className="text-[10px] text-muted-foreground">
-                      Brief description for your profile.
-                    </p>
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="links">Links</Label>
-                    <Input
-                      id="links"
-                      value={links}
-                      onChange={(e) => setLinks(e.target.value)}
-                      placeholder="github.com/u/..., twitter.com/..."
-                      inputMode="url"
-                    />
-                    <p className="text-[10px] text-muted-foreground">
-                      Comma separated URLs
-                    </p>
-                  </div>
                 </div>
-
-                <div className="flex justify-end pt-2">
-                  <Button
-                    onClick={onSave}
-                    disabled={isSaving}
-                    className="w-full sm:w-auto"
-                  >
-                    {isSaving && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
-                    Save Changes
+                <div className="space-y-1.5">
+                  <Label htmlFor="fuzz" className="text-xs">Default fuzz (km)</Label>
+                  <Input id="fuzz" type="number" min="0" step="0.1" value={defaultFuzzKm} onChange={(e) => setDefaultFuzzKm(e.target.value)} className="h-9 max-w-[200px]" />
+                  <p className="text-xs text-muted-foreground">Adds a random offset to your pin.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="bio" className="text-xs">Bio</Label>
+                  <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="What are you building?" className="min-h-[84px] resize-none text-sm" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="links" className="text-xs">Links</Label>
+                  <Input id="links" value={links} onChange={(e) => setLinks(e.target.value)} placeholder="github.com/..., x.com/..." className="h-9" />
+                  <p className="text-xs text-muted-foreground">Comma separated.</p>
+                </div>
+                <div className="flex justify-end">
+                  <Button onClick={onSave} disabled={isSaving} className="h-9">
+                    {isSaving && <Loader2 className="size-4 animate-spin" />} Save changes
                   </Button>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </>
         )}
       </div>
     </div>

@@ -7,100 +7,83 @@ import { api } from "@/convex/_generated/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ExternalLink, Github, Mail, Globe } from "lucide-react";
+import { ExternalLink, Github, Mail, Globe, ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function UserProfile({
-  params,
-}: {
-  params: Promise<{ clerkId: string }>;
-}) {
+export default function UserProfile({ params }: { params: Promise<{ clerkId: string }> }) {
   const { clerkId } = React.use(params);
-
   const user = useQuery(api.users.getByClerkId, { clerkId });
 
-  const isLoading = user === undefined;
-  const notFound = user === null;
-
-  if (isLoading) {
+  if (user === undefined) {
     return (
-      <div className="flex min-h-[calc(100vh-64px)] items-center justify-center">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="mx-auto max-w-xl px-4 py-12">
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
-
-  if (notFound) {
+  if (user === null) {
     return (
-      <div className="flex min-h-[calc(100vh-64px)] flex-col items-center justify-center gap-4">
-        <p className="text-xl font-medium text-muted-foreground">
-          User not found
-        </p>
-        <Button asChild variant="secondary">
-          <Link href="/">Return Home</Link>
+      <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-4 py-24 text-center">
+        <p className="text-sm font-medium">User not found</p>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/">Return home</Link>
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full flex items-center justify-center p-4">
-      <Card className="overflow-hidden border-border/50 bg-card/60 w-full max-w-xl">
-        <CardContent className="relative pt-0 pb-8 px-8">
-          <Avatar className="h-32 w-32">
-            <AvatarImage src={user.imageUrl} alt={user.name} />
-            <AvatarFallback className="text-3xl rounded-2xl">
-              {user.name.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+    <div className="mx-auto w-full max-w-xl px-4 py-8">
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="size-4" /> Home
+      </Link>
 
-          <div className="pt-10 space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight display-font">
-                {user.name}
-              </h1>
+      <Card className="mt-6 overflow-hidden">
+        <div className="h-20 bg-muted" />
+        <CardContent className="p-6">
+          <div className="-mt-12 flex items-end gap-4">
+            <Avatar className="size-20 border-4 border-background shadow-sm">
+              <AvatarImage src={user.imageUrl} alt={user.name} />
+              <AvatarFallback>{user.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="pb-1">
+              <h1 className="text-lg font-semibold tracking-tight leading-none">{user.name}</h1>
               {user.email && (
-                <p className="text-muted-foreground flex items-center gap-2 mt-1">
-                  <Mail size={14} />
-                  {user.email}
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Mail className="size-3.5" /> {user.email}
                 </p>
               )}
             </div>
+          </div>
 
-            {user.bio && (
-              <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90">
-                <p className="whitespace-pre-wrap leading-relaxed">
-                  {user.bio}
-                </p>
-              </div>
-            )}
+          {user.bio && <p className="mt-6 whitespace-pre-wrap text-sm leading-6">{user.bio}</p>}
 
-            {user.links && user.links.length > 0 && (
-              <div className="flex flex-wrap gap-2 pt-2">
-                {user.links.map((link, i) => {
-                  const url = link.startsWith("http")
-                    ? link
-                    : `https://${link}`;
-                  const isGithub = link.includes("github.com");
-                  return (
-                    <Button
-                      key={i}
-                      variant="secondary"
-                      size="sm"
-                      asChild
-                      className="gap-2 rounded-full px-4 h-8 bg-secondary/50 hover:bg-secondary"
-                    >
-                      <a href={url} target="_blank" rel="noopener noreferrer">
-                        {isGithub ? <Github size={14} /> : <Globe size={14} />}
-                        <span className="font-normal">
-                          {new URL(url).hostname}
-                        </span>
-                        <ExternalLink size={12} className="opacity-50" />
-                      </a>
-                    </Button>
-                  );
-                })}
-              </div>
-            )}
+          {user.links && user.links.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {user.links.map((link, i) => {
+                const url = link.startsWith("http") ? link : `https://${link}`;
+                const isGithub = link.includes("github.com");
+                let hostname = link;
+                try {
+                  hostname = new URL(url).hostname.replace("www.", "");
+                } catch {}
+                return (
+                  <Button key={i} variant="outline" size="sm" asChild className="h-7 gap-1.5 bg-background rounded-full">
+                    <a href={url} target="_blank" rel="noreferrer">
+                      {isGithub ? <Github className="size-3.5" /> : <Globe className="size-3.5" />}
+                      <span className="text-xs">{hostname}</span>
+                      <ExternalLink className="size-3 opacity-50" />
+                    </a>
+                  </Button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="mt-6 flex items-center gap-2 border-t pt-4 text-xs text-muted-foreground">
+            <span className="font-mono">{user.checkinsCount} check-ins</span>
+            <span>·</span>
+            <span>Joined {new Date(user.updatedAt).toLocaleDateString()}</span>
           </div>
         </CardContent>
       </Card>

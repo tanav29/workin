@@ -7,7 +7,6 @@ import { api } from "@/convex/_generated/api";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -26,128 +25,118 @@ export function NotificationsMenu() {
 
   const unreadCount = notifications?.length ?? 0;
 
-  const handleMarkAsRead = async (id: Id<"notifications">) => {
-    try {
-      await markAsRead({ notificationId: id });
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to mark as read");
-    }
-  };
-
   const handleClearAll = async () => {
     try {
       await clearAll();
-      toast.success("All notifications cleared");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to clear notifications");
+      toast.success("Cleared");
+    } catch {
+      toast.error("Failed to clear");
     }
   };
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="relative">
-        <Bell className="h-5 w-5" />
-        {unreadCount > 0 && (
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-600 ring-2 ring-background" />
-        )}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel className="flex items-center justify-between">
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon" className="relative">
+          <Bell className="size-4" />
           {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-auto px-2 text-xs"
-              onClick={handleClearAll}
-            >
+            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-foreground text-[10px] font-medium text-background">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+          <span className="sr-only">Notifications</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="center" className="mx-2">
+        <DropdownMenuLabel className="flex items-center justify-between px-3 py-2">
+          <span className="text-sm font-semibold tracking-tight">Notifications</span>
+          {unreadCount > 0 ? (
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={handleClearAll}>
               Clear all
             </Button>
-          )}
+          ) : null}
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {notifications === undefined ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            Loading...
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="p-4 text-center text-sm text-muted-foreground">
-            No new notifications
-          </div>
-        ) : (
-          notifications.map((n) => (
-            <DropdownMenuItem
-              key={n._id}
-              className="flex items-start gap-3 p-3 cursor-pointer"
-              onSelect={(e) => {
-                e.preventDefault();
-                if (n.type !== "join-request") {
-                  handleMarkAsRead(n._id);
-                }
-              }}
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={n.imagePayloadUrl} />
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col gap-1 flex-1">
-                <p className="text-sm font-medium leading-none">
-                  {n.type === "say-hello"
-                    ? "Someone said Hello! 👋"
-                    : n.type === "join-request"
-                      ? "Join Request"
-                      : "New notification"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {n.action}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(n.createdAt).toLocaleTimeString()}
-                </p>
-                {n.type === "join-request" && (
-                  <div className="flex gap-2 mt-2">
-                    <Button
-                      size="sm"
-                      variant="default"
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        try {
-                          await acceptJoinRequest({ notificationId: n._id });
-                          toast.success("Join request accepted");
-                        } catch (error) {
-                          console.error(error);
-                          toast.error("Failed to accept");
-                        }
-                      }}
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        try {
-                          await declineJoinRequest({ notificationId: n._id });
-                          toast.success("Join request declined");
-                        } catch (error) {
-                          console.error(error);
-                          toast.error("Failed to decline");
-                        }
-                      }}
-                    >
-                      Decline
-                    </Button>
+        <DropdownMenuSeparator className="m-0" />
+        <div className="max-h-[380px] overflow-auto">
+          {notifications === undefined ? (
+            <div className="p-8 text-center text-sm text-muted-foreground">Loading…</div>
+          ) : notifications.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className="text-sm font-medium">No new notifications</p>
+              <p className="mt-1 text-xs text-muted-foreground">Waves and join requests will appear here.</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {notifications.map((n) => (
+                <div
+                  key={n._id}
+                  className="flex gap-3 p-3 hover:bg-muted/50"
+                >
+                  <Avatar className="size-8 shrink-0">
+                    <AvatarImage src={n.imagePayloadUrl} />
+                    <AvatarFallback className="text-xs">U</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {n.type === "say-hello" ? "Waved hello 👋" : n.type === "join-request" ? "Wants to join" : "Notification"}
+                    </p>
+                    <p className="text-xs leading-5 text-muted-foreground line-clamp-2">{n.action}</p>
+                    <p className="text-[11px] text-muted-foreground">{new Date(n.createdAt).toLocaleString()}</p>
+                    {n.type === "join-request" ? (
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          className="h-7 px-3 text-xs"
+                          onClick={async () => {
+                            try {
+                              await acceptJoinRequest({ notificationId: n._id });
+                              toast.success("Accepted");
+                            } catch {
+                              toast.error("Failed");
+                            }
+                          }}
+                        >
+                          Accept
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-3 text-xs bg-background"
+                          onClick={async () => {
+                            try {
+                              await declineJoinRequest({ notificationId: n._id });
+                              toast.success("Declined");
+                            } catch {
+                              toast.error("Failed");
+                            }
+                          }}
+                        >
+                          Decline
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs -ml-2"
+                        onClick={async () => {
+                          try {
+                            await markAsRead({ notificationId: n._id as Id<"notifications"> });
+                          } catch {
+                            toast.error("Failed");
+                          }
+                        }}
+                      >
+                        Mark read
+                      </Button>
+                    )}
                   </div>
-                )}
-              </div>
-              {n.type !== "join-request" && (
-                <div className="ml-auto h-2 w-2 rounded-full bg-blue-500" />
-              )}
-            </DropdownMenuItem>
-          ))
-        )}
+                  {n.type !== "join-request" && <span className="mt-1 size-1.5 shrink-0 rounded-full bg-blue-500" />}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );

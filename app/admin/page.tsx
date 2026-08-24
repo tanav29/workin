@@ -3,15 +3,19 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { MapView } from "@/components/app/map-view";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminPage() {
   const checkins = useQuery(api.checkins.getAllActive);
 
-  if (!checkins) {
-    return <div>Loading...</div>;
+  if (checkins === undefined) {
+    return (
+      <div className="mx-auto max-w-6xl p-4 py-8">
+        <Skeleton className="h-[600px] w-full" />
+      </div>
+    );
   }
 
   const mapCheckins = checkins.map((c) => ({
@@ -19,46 +23,40 @@ export default function AdminPage() {
     lat: c.lat,
     lng: c.lng,
     note: c.note,
-    shareId: c._id, // or generate share id
+    shareId: c._id,
     userImageUrl: c.userImageUrl,
     placeName: c.placeName,
-    userName: "", // need to fetch user name
     clerkId: c.clerkId,
     startedAt: c.startedAt,
+    status: c.status,
+    participants: c.participants,
   }));
 
-  // Calculate center, perhaps average or default
-  const center = mapCheckins.length > 0
-    ? {
-        lat: mapCheckins.reduce((sum, c) => sum + c.lat, 0) / mapCheckins.length,
-        lng: mapCheckins.reduce((sum, c) => sum + c.lng, 0) / mapCheckins.length,
-      }
-    : { lat: 37.7749, lng: -122.4194 }; // default SF
+  const center =
+    mapCheckins.length > 0
+      ? {
+          lat: mapCheckins.reduce((s, c) => s + c.lat, 0) / mapCheckins.length,
+          lng: mapCheckins.reduce((s, c) => s + c.lng, 0) / mapCheckins.length,
+        }
+      : { lat: 37.7749, lng: -122.4194 };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="mx-auto w-full max-w-6xl p-4 py-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Admin - All Active Check-ins
-          </CardTitle>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              Live check-ins
-            </span>
-            <Badge variant="secondary">{checkins.length} active</Badge>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base">Admin — Live check-ins</CardTitle>
+              <CardDescription>All active sessions across the platform.</CardDescription>
+            </div>
+            <Badge variant="secondary" className="font-mono">
+              {checkins.length} active
+            </Badge>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="h-[600px] w-full border rounded-xl overflow-hidden">
-            <MapView
-              center={center}
-              checkins={mapCheckins}
-              onCheckin={(id) => window.open(`/c/${id}`, "_blank")}
-              className="border-0 shadow-none h-full w-full rounded-none"
-            />
+          <div className="h-[560px] overflow-hidden rounded-xl border">
+            <MapView center={center} checkins={mapCheckins} className="h-full w-full rounded-none border-0 shadow-none" />
           </div>
         </CardContent>
       </Card>

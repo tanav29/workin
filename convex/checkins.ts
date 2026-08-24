@@ -344,7 +344,7 @@ export const createCheckin = action({
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${args.lat}&lon=${args.lng}`,
         {
           headers: {
-            "User-Agent": "workin/1.0 (https://github.com/thetanav/workin)",
+            "User-Agent": "cowork/1.0 (https://github.com/thetanav/cowork)",
             "Accept-Language": "en",
           },
         },
