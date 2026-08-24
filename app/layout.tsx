@@ -6,8 +6,9 @@ import { ClerkProvider } from "@clerk/nextjs";
 import ConvexClientProvider from "@/components/app/providers";
 import Navbar from "@/components/app/navbar";
 import { ThemeProvider } from "next-themes";
+import { cn } from "@/lib/utils";
 
-const sans = Geist({ subsets: ["latin"], variable: "--font-sans" });
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
@@ -33,14 +34,14 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.ico" },
 };
 
-export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "oklch(0.145 0 0)" },
-  ],
-  width: "device-width",
-  initialScale: 1,
-};
+// export const viewport: Viewport = {
+//   themeColor: [
+//     { media: "(prefers-color-scheme: light)", color: "white" },
+//     { media: "(prefers-color-scheme: dark)", color: "oklch(0.145 0 0)" },
+//   ],
+//   width: "device-width",
+//   initialScale: 1,
+// };
 
 export default function RootLayout({
   children,
@@ -48,7 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={cn(mono.variable, "font-sans dark", geist.variable)} suppressHydrationWarning>
       <body className="min-h-screen w-full flex flex-col bg-background">
         <ThemeProvider
           attribute="class"

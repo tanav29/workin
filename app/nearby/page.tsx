@@ -104,8 +104,8 @@ export default function Page() {
         <div className="mx-auto flex max-w-6xl items-start justify-between gap-3">
           <div className="pointer-events-auto flex items-center gap-2 rounded-xl border bg-background/95 px-3 py-2 shadow-sm backdrop-blur">
             <span className="text-xs font-medium tracking-tight">Radius</span>
-            <Select value={radiusKm} onValueChange={setRadiusKm}>
-              <SelectTrigger className="h-7 w-[92px] text-xs">
+            <Select value={radiusKm} onValueChange={(value) => value !== null && setRadiusKm(value)}>
+              <SelectTrigger className="text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

@@ -30,8 +30,8 @@ export default function SharePage({ params }: { params: Promise<{ shareId: strin
       <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-4 py-24 text-center">
         <h1 className="text-lg font-semibold tracking-tight">Not found</h1>
         <p className="text-sm text-muted-foreground">This check-in expired or is private. Sessions expire after 6 hours.</p>
-        <Button asChild size="sm" className="mt-2">
-          <Link href="/nearby">Back to map</Link>
+        <Button render={<Link href="/nearby" />} size="sm" className="mt-2">
+          Back to map
         </Button>
       </div>
     );

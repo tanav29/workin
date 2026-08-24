@@ -15,14 +15,11 @@ export function ConvexNotice() {
           </p>
         </div>
         <div>
-          <Button asChild variant="secondary">
-            <a
-              href="https://docs.convex.dev/quickstart/nextjs"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Convex Next.js quickstart
-            </a>
+          <Button
+            render={<a href="https://docs.convex.dev/quickstart/nextjs" target="_blank" rel="noreferrer" />}
+            variant="secondary"
+          >
+            Convex Next.js quickstart
           </Button>
         </div>
       </div>

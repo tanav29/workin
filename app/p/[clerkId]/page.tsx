@@ -25,8 +25,8 @@ export default function UserProfile({ params }: { params: Promise<{ clerkId: str
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-4 py-24 text-center">
         <p className="text-sm font-medium">User not found</p>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/">Return home</Link>
+        <Button render={<Link href="/" />} variant="outline" size="sm">
+          Return home
         </Button>
       </div>
     );
@@ -68,12 +68,16 @@ export default function UserProfile({ params }: { params: Promise<{ clerkId: str
                   hostname = new URL(url).hostname.replace("www.", "");
                 } catch {}
                 return (
-                  <Button key={i} variant="outline" size="sm" asChild className="h-7 gap-1.5 bg-background rounded-full">
-                    <a href={url} target="_blank" rel="noreferrer">
-                      {isGithub ? <Github className="size-3.5" /> : <Globe className="size-3.5" />}
-                      <span className="text-xs">{hostname}</span>
-                      <ExternalLink className="size-3 opacity-50" />
-                    </a>
+                  <Button
+                    key={i}
+                    variant="outline"
+                    size="sm"
+                    render={<a href={url} target="_blank" rel="noreferrer" />}
+                    className="h-7 gap-1.5 bg-background rounded-full"
+                  >
+                    {isGithub ? <Github className="size-3.5" /> : <Globe className="size-3.5" />}
+                    <span className="text-xs">{hostname}</span>
+                    <ExternalLink className="size-3 opacity-50" />
                   </Button>
                 );
               })}

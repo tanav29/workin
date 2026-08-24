@@ -151,7 +151,7 @@ export function CheckinPanel({ coords, defaultOpen = false }: { coords: { lat: n
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs">Status</Label>
-                  <Select value={status} onValueChange={setStatus} disabled={!canUse}>
+                  <Select value={status} onValueChange={(value) => value !== null && setStatus(value)} disabled={!canUse}>
                     <SelectTrigger className="h-9">
                       <SelectValue />
                     </SelectTrigger>
@@ -165,7 +165,7 @@ export function CheckinPanel({ coords, defaultOpen = false }: { coords: { lat: n
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Visibility</Label>
-                  <Select value={visibility} onValueChange={setVisibility} disabled={!canUse}>
+                  <Select value={visibility} onValueChange={(value) => value !== null && setVisibility(value)} disabled={!canUse}>
                     <SelectTrigger className="h-9">
                       <SelectValue />
                     </SelectTrigger>
@@ -220,10 +220,8 @@ export function CheckinPanel({ coords, defaultOpen = false }: { coords: { lat: n
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" asChild className="h-9 bg-background">
-                  <Link href={`/c/${shareId}`}>
-                    <Share2 className="size-4" /> Share
-                  </Link>
+                <Button variant="outline" render={<Link href={`/c/${shareId}`} />} className="h-9 bg-background">
+                  <Share2 className="size-4" /> Share
                 </Button>
                 <Button variant="outline" onClick={onEnd} className="h-9 text-destructive hover:text-destructive">
                   <XCircle className="size-4" /> End

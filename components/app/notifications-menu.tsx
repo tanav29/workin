@@ -36,18 +36,16 @@ export function NotificationsMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="relative">
-          <Bell className="size-4" />
-          {unreadCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-foreground text-[10px] font-medium text-background">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-          <span className="sr-only">Notifications</span>
-        </Button>
+      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="relative" />}>
+        <Bell className="size-4" />
+        {unreadCount > 0 && (
+          <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-foreground text-[10px] font-medium text-background">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+        <span className="sr-only">Notifications</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="center" className="mx-2">
+      <DropdownMenuContent align="center" className="mx-2 min-w-72">
         <DropdownMenuLabel className="flex items-center justify-between px-3 py-2">
           <span className="text-sm font-semibold tracking-tight">Notifications</span>
           {unreadCount > 0 ? (

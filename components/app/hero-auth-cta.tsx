@@ -19,12 +19,10 @@ export function HeroAuthCta() {
 
       <Authenticated>
         <div className="mt-8 flex justify-center">
-          <Button asChild size="lg" className="h-10 px-6">
-            <Link href="/nearby">
-              <MapPin className="size-4" />
-              Explore nearby
-              <ArrowRight className="size-4 opacity-60" />
-            </Link>
+          <Button render={<Link href="/nearby" />} size="lg" className="h-10 px-6">
+            <MapPin className="size-4" />
+            Explore nearby
+            <ArrowRight className="size-4 opacity-60" />
           </Button>
         </div>
       </Authenticated>
@@ -38,11 +36,9 @@ export function HeroAuthCta() {
               <ArrowRight className="size-4 opacity-60" />
             </Button>
           </SignInButton>
-          <Button asChild variant="outline" size="lg" className="h-10 w-full sm:w-auto px-6 bg-background">
-            <Link href="/nearby">
-              <MapPin className="size-4" />
-              Explore nearby
-            </Link>
+          <Button render={<Link href="/nearby" />} variant="outline" size="lg" className="h-10 w-full sm:w-auto px-6 bg-background">
+            <MapPin className="size-4" />
+            Explore nearby
           </Button>
         </div>
       </Unauthenticated>

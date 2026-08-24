@@ -44,11 +44,9 @@ export default function Navbar() {
           </nav>
         </div>
 
-        <div className="flex h-full items-center justify-center gap-1">
+        <div className="flex h-full items-center justify-center gap-2">
           <NotificationsMenu />
-          <div className="ml-1">
-            <AuthComp />
-          </div>
+          <AuthComp />
         </div>
       </div>
     </header>

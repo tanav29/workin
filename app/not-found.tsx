@@ -7,8 +7,8 @@ export default function NotFound() {
       <p className="rounded-full border bg-muted px-3 py-1 text-xs font-medium">404</p>
       <h1 className="text-lg font-semibold tracking-tight">Page not found</h1>
       <p className="max-w-sm text-sm text-muted-foreground">The page you’re looking for doesn’t exist or was moved.</p>
-      <Button asChild className="mt-2 h-9">
-        <Link href="/">Go home</Link>
+      <Button render={<Link href="/" />} className="mt-2 h-9">
+        Go home
       </Button>
     </div>
   );

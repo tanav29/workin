@@ -20,6 +20,38 @@ export const current = query({
   },
 });
 
+export const ensure = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity === null) throw new Error("Unauthorized");
+    let user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (user) return user;
+    const fallbackName =
+      (identity.name as string | undefined) ??
+      ([identity.givenName, identity.familyName].filter(Boolean).join(" ") || undefined) ??
+      (identity.nickname as string | undefined) ??
+      identity.email ??
+      "Anonymous";
+    await ctx.db.insert("users", {
+      name: String(fallbackName).trim() || "Anonymous",
+      clerkId: identity.subject,
+      imageUrl: identity.pictureUrl,
+      email: identity.email,
+      updatedAt: Date.now(),
+      checkinsCount: 0,
+    });
+    user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    return user;
+  },
+});
+
 export const getById = query({
   args: { userId: v.string() },
   handler: async (ctx: QueryCtx, args) => {
@@ -84,12 +116,29 @@ export const updateProfile = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (identity === null) return null;
-    const user = await ctx.db
+    if (identity === null) throw new Error("Unauthorized");
+    let user = await ctx.db
       .query("users")
       .withIndex("by_clerk", (q) => q.eq("clerkId", identity.subject))
       .unique();
-    if (!user) throw new Error("Unauthorized");
+    if (!user) {
+      const fallbackName =
+        (identity.name as string | undefined) ??
+        ([identity.givenName, identity.familyName].filter(Boolean).join(" ") || undefined) ??
+        (identity.nickname as string | undefined) ??
+        identity.email ??
+        "Anonymous";
+      const id = await ctx.db.insert("users", {
+        name: String(fallbackName).trim() || "Anonymous",
+        clerkId: identity.subject,
+        imageUrl: identity.pictureUrl,
+        email: identity.email,
+        updatedAt: Date.now(),
+        checkinsCount: 0,
+      });
+      user = await ctx.db.get(id);
+      if (!user) throw new Error("Failed to create user");
+    }
 
     await ctx.db.patch(user._id, {
       bio: args.bio,
